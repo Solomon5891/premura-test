@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Premura Waitlist — A Fifth Grader's Explainer</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 820px;
+    margin: 40px auto;
+    padding: 0 24px;
+    line-height: 1.6;
+    color: #1f2328;
+  }
+  h1 { font-size: 28px; border-bottom: 2px solid #d0d7de; padding-bottom: 8px; margin-top: 32px; }
+  h2 { font-size: 22px; border-bottom: 1px solid #d0d7de; padding-bottom: 6px; margin-top: 32px; }
+  h3 { font-size: 18px; margin-top: 24px; }
+  p, li { font-size: 15px; }
+  hr { border: none; border-top: 1px solid #d0d7de; margin: 32px 0; }
+  code {
+    background: #f6f8fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", Consolas, "Liberation Mono", monospace;
+    font-size: 13px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid #d0d7de;
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #f6f8fa; font-weight: 600; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  ol, ul { padding-left: 24px; }
+  li { margin: 4px 0; }
+  blockquote { color: #57606a; border-left: 3px solid #d0d7de; padding-left: 12px; margin-left: 0; }
+  strong { color: #0a1929; }
+</style>
+</head>
+<body>
+
+<h1>Premura Waitlist — A Fifth Grader's Explainer</h1>
+
+<h2>What did we build?</h2>
+
+<p>Imagine Premura is opening a really cool new clubhouse, but it's not ready yet. Lots of grown-ups (people who work at companies) want to be the first inside. So we built a <strong>sign-up sheet on the internet</strong> — a webpage where they can put their name, work email, and where they work, and we promise to let them know when the clubhouse opens.</p>
+
+<p>But it's not just a normal sign-up sheet. Ours is sneaky-smart:</p>
+
+<ol>
+  <li>It <strong>remembers where each person came from</strong> — like if they clicked a Google ad, or a tweet, or a friend's link.</li>
+  <li>It <strong>looks up their company for us</strong> so we already know if they work at a big or small place before we even talk to them.</li>
+  <li>It <strong>tells our team on Slack</strong> the second someone signs up, so we can reach out fast.</li>
+  <li>It <strong>counts everyone live</strong> on the page so visitors see "237 teams already on the waitlist" and feel like they should hurry.</li>
+  <li>It <strong>stops robots</strong> from spamming the form with fake names.</li>
+  <li>It <strong>lets our team peek at all the signups</strong> through a private dashboard — but keeps everyone else locked out.</li>
+</ol>
+
+<p>That's the whole project.</p>
+
+<hr>
+
+<h2>The tech stack — what each tool does, in plain English</h2>
+
+<p>Think of building a website like building a fancy lemonade stand. Each tool is one piece of the stand.</p>
+
+<h3>🏗️ Next.js — the lemonade stand itself</h3>
+<p>This is the <strong>frame</strong> of the website. It's the wood and nails. Next.js gives us pages people can visit (<code>/</code>) AND a little kitchen in the back (<code>/api/waitlist</code>) where the website can do work that visitors aren't allowed to see — like saving things to a database or talking to other companies' computers.</p>
+
+<h3>🎨 Tailwind CSS — the paint and decorations</h3>
+<p>This is what makes the page <strong>look pretty</strong>. Instead of writing long instructions like "make this button blue, make it round, make it big," we just write short tags like <code>rounded-lg bg-white px-4 py-3</code>. It's like using stickers instead of drawing everything by hand.</p>
+
+<h3>✏️ TypeScript — the spell-checker for our code</h3>
+<p>TypeScript is a <strong>strict teacher</strong> that reads our code while we write it. If we say "give me the user's email" but the user only gave us their name, TypeScript yells at us <em>before</em> the website breaks. It catches mistakes when we're still writing, not after a real person hits the form.</p>
+
+<h3>📚 Supabase — the giant filing cabinet</h3>
+<p>This is where we <strong>store everything</strong>. When someone signs up, their information gets saved into Supabase. It has two filing drawers we use:</p>
+<ul>
+  <li><strong><code>waitlist</code></strong> — the actual list of people who want in.</li>
+  <li><strong><code>events</code></strong> — a diary of every little thing that happens (someone visited the page, someone clicked the form, someone signed up). The marketing team reads this diary to figure out what's working.</li>
+</ul>
+<p>Supabase has a security guard called <strong>RLS</strong> (Row-Level Security). The guard's job: anyone with the building key (the "anon key" in our website's code) is allowed to <em>put</em> a paper in the <code>waitlist</code> drawer, but <strong>not</strong> to read other people's papers. That keeps emails private — even though our key is technically visible to anyone who looks at our website's source code.</p>
+
+<h3>🕵️ Apollo.io — the company-research helper</h3>
+<p>When someone types <code>sarah@acme.com</code>, Apollo says, <strong>"Oh, Acme! That's a 500-person software company in Texas, here's their LinkedIn."</strong> We save that info next to Sarah's signup so our sales team knows right away whether Sarah works at a tiny startup or a giant corporation. We give Apollo only 3 seconds to answer — if it's slow, we just save the signup without the extra info instead of making the user wait forever.</p>
+
+<h3>💬 Slack — the team paper-airplane system</h3>
+<p>The second someone signs up, we throw a <strong>paper airplane into our team's Slack chat</strong> that says: <em>"🎉 New signup! Sarah from Acme. They came from a Google ad. We think this is a Big company."</em> The team sees it instantly and can reach out within minutes instead of hours.</p>
+
+<h3>🛡️ Cloudflare Turnstile — the bouncer at the door</h3>
+<p>There are robots on the internet that fill in forms 1,000 times a minute with fake names. Turnstile is a <strong>bouncer</strong> that quietly checks "are you a real human?" before letting anyone submit the form. The user usually doesn't even see it — it just works in the background.</p>
+
+<h3>🚦 Upstash Redis + Ratelimit — the "you've used your turns" counter</h3>
+<p>Even with a bouncer, sometimes one person tries to sign up too many times. Upstash keeps a tiny counter for every visitor's address. If one address tries more than <strong>10 sign-ups in an hour</strong>, we politely say "slow down, try again later." It's like a board game where you only get so many turns per round.</p>
+
+<h3>🍪 localStorage — the user's secret notebook</h3>
+<p>Every visitor's web browser has a tiny notebook called localStorage. We write two things in it:</p>
+<ol>
+  <li>A <strong>random ID</strong> so we can tell "this is the same person who visited yesterday" — without ever asking their name.</li>
+  <li>The <strong>first place they came from</strong> (their first Google search, their first tweet click). Because if they visit 5 times before signing up, we want to know what <em>originally</em> brought them, not just the last click.</li>
+</ol>
+
+<h3>🔐 The admin dashboard — a secret peephole for the team</h3>
+<p>All these signups are piling up in the filing cabinet. How does the team actually <em>look</em> at them?</p>
+<p>We built a <strong>secret back-room peephole</strong> at <code>/admin</code>. To open the door you have to type a password — the browser shows one of those little pop-ups that asks for a username and password. Once you're in, you see:</p>
+<ul>
+  <li><strong>Big numbers</strong>: total signups, signups in the last 24 hours, signups in the last 7 days.</li>
+  <li><strong>Breakdowns</strong>: which sources brought the most people (Google? Twitter? word of mouth?), which campaigns, which mediums, and what size of company each signup works at.</li>
+  <li><strong>A list</strong> of the most recent 100 signups with everything Apollo told us about each one.</li>
+</ul>
+<p>But wait — remember the security guard (RLS) who won't let our front-door key read the filing cabinet? The dashboard needs to read it. So we keep a <strong>special master key</strong> called the <em>service-role key</em> tucked away in the back room. The guard respects this master key. We never, ever hand it to a visitor's browser — only the back-room kitchen ever holds it.</p>
+<p>A little doorman called <strong>middleware</strong> stands at every URL that starts with <code>/admin</code> and checks the password before letting anyone through. If the password is wrong (or missing), the doorman politely says "401 — please show me a password." Wrong password → no peeking. Simple.</p>
+
+<hr>
+
+<h2>What happens when someone signs up — the whole story</h2>
+
+<p>Here's the journey from "Sarah lands on our page" to "the team gets a Slack ping," step by step:</p>
+
+<ol>
+  <li><strong>Sarah clicks a Google ad</strong> that looks like <code>premura.com/?utm_source=google&amp;utm_campaign=launch</code>.</li>
+  <li>The page loads. Our code reads the URL, grabs <code>utm_source=google</code>, and writes it in Sarah's browser notebook (localStorage).</li>
+  <li>The page also fires a <code>page_view</code> event into our <code>events</code> diary so the marketing team knows the ad got a click.</li>
+  <li>Sarah fills in: <strong>"Sarah Chen, sarah@acme.com, Acme."</strong></li>
+  <li>The bouncer (Turnstile) silently confirms she's a real human.</li>
+  <li>Her browser sends everything to our back-room kitchen at <code>/api/waitlist</code>.</li>
+  <li>The kitchen checks:
+    <ul>
+      <li>Is she over the rate limit? (No.)</li>
+      <li>Did the bouncer approve her? (Yes.)</li>
+      <li>Is <code>sarah@acme.com</code> a real-looking work email and not a <code>gmail.com</code>? (Yes.)</li>
+    </ul>
+  </li>
+  <li>We ask Apollo, "Tell me about acme.com." Apollo says, "500 employees, software, Texas."</li>
+  <li>We <strong>make a unique ID</strong> for Sarah's row (this is the bug we fixed — we don't ask Supabase to make it for us, because the security guard won't show it back to us).</li>
+  <li>We save Sarah into the <code>waitlist</code> drawer with all her info plus what Apollo told us.</li>
+  <li>We save a <code>waitlist_signup</code> event in the <code>events</code> diary.</li>
+  <li>We throw a Slack airplane to the team: <em>"🎉 New signup — Mid-Market lead — Sarah Chen, Acme."</em></li>
+  <li>The website tells Sarah's browser: ✅ "You're on the list!"</li>
+  <li>Meanwhile, the live counter on the page ticks up from <code>236</code> to <code>237</code> for everyone else looking at the page right now (Supabase has a real-time feature that pushes the new number to every open browser).</li>
+</ol>
+
+<p>The whole thing takes about <strong>3 seconds</strong>, mostly waiting on Apollo.</p>
+
+<hr>
+
+<h2>Where each piece lives in the project</h2>
+
+<table>
+  <thead>
+    <tr><th>What</th><th>Where</th><th>What it does</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>The landing page</td><td><code>app/page.tsx</code></td><td>The thing visitors see</td></tr>
+    <tr><td>The form</td><td><code>components/WaitlistForm.tsx</code></td><td>The sign-up form itself</td></tr>
+    <tr><td>The signup back-end</td><td><code>app/api/waitlist/route.ts</code></td><td>The kitchen that handles signups</td></tr>
+    <tr><td>Live counter</td><td><code>components/SignupCounter.tsx</code></td><td>"237 teams already on the waitlist"</td></tr>
+    <tr><td>Page view tracker</td><td><code>components/PageViewTracker.tsx</code></td><td>Logs every visit</td></tr>
+    <tr><td>Bot bouncer</td><td><code>components/Turnstile.tsx</code> + <code>lib/turnstile.ts</code></td><td>Cloudflare check</td></tr>
+    <tr><td>Filing-cabinet client</td><td><code>lib/supabase-server.ts</code> + <code>lib/supabase-browser.ts</code></td><td>How we talk to Supabase</td></tr>
+    <tr><td>Browser notebook</td><td><code>lib/attribution.ts</code></td><td>localStorage + UTM capture</td></tr>
+    <tr><td>Diary writer</td><td><code>lib/track.ts</code></td><td>Sends <code>events</code> rows</td></tr>
+    <tr><td>Company researcher</td><td><code>lib/enrich.ts</code></td><td>Apollo.io call</td></tr>
+    <tr><td>Lead size labeler</td><td><code>lib/leadtier.ts</code></td><td>"Big / Mid / Small company" tags</td></tr>
+    <tr><td>Paper airplane</td><td><code>lib/slack.ts</code></td><td>Slack webhook</td></tr>
+    <tr><td>Turn counter</td><td><code>lib/ratelimit.ts</code></td><td>Upstash rate limit</td></tr>
+    <tr><td>Database shape</td><td><code>supabase/schema.sql</code> + <code>supabase/migrations/</code></td><td>The drawer designs</td></tr>
+    <tr><td>Admin dashboard page</td><td><code>app/admin/page.tsx</code></td><td>The peephole — KPIs, UTM breakdowns, recent signups</td></tr>
+    <tr><td>Master-key client</td><td><code>lib/supabase-admin.ts</code></td><td>Server-only Supabase client (service-role)</td></tr>
+    <tr><td>Doorman</td><td><code>middleware.ts</code></td><td>Basic-auth gate on <code>/admin/*</code></td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>The secret keys (and why we don't put them in the code)</h2>
+
+<p>Some keys are public — like the front door key to a public library. Others are private — like the key to the staff room. We keep them in a file called <code>.env.local</code> that <strong>never</strong> gets uploaded to GitHub. The <code>.env.local.example</code> file shows which keys exist without revealing the real values.</p>
+
+<table>
+  <thead>
+    <tr><th>Key</th><th>What it unlocks</th><th>Public or Secret?</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>Address of our filing cabinet</td><td>Public</td></tr>
+    <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>Front-door key to Supabase</td><td>Public (RLS protects the data)</td></tr>
+    <tr><td><code>APOLLO_API_KEY</code></td><td>Lets us ask Apollo about companies</td><td>Secret</td></tr>
+    <tr><td><code>SLACK_WEBHOOK_URL</code></td><td>The address to throw paper airplanes at</td><td>Secret</td></tr>
+    <tr><td><code>UPSTASH_REDIS_REST_URL</code> + <code>_TOKEN</code></td><td>The turn-counter</td><td>Secret</td></tr>
+    <tr><td><code>TURNSTILE_SECRET_KEY</code></td><td>Bouncer's verification key</td><td>Secret</td></tr>
+    <tr><td><code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code></td><td>Public side of the bouncer</td><td>Public</td></tr>
+    <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>Master key — bypasses RLS so the admin dashboard can read everything</td><td><strong>Very Secret</strong> (server-only)</td></tr>
+    <tr><td><code>ADMIN_PASSWORD</code></td><td>Password for the <code>/admin</code> peephole</td><td>Secret</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>The TL;DR for grown-ups</h2>
+
+<ul>
+  <li><strong>Frontend:</strong> Next.js 14 (App Router) + Tailwind + TypeScript</li>
+  <li><strong>Backend:</strong> Next.js API routes + Supabase (Postgres) with RLS</li>
+  <li><strong>Enrichment:</strong> Apollo.io (3s timeout, fail-open)</li>
+  <li><strong>Bot defense:</strong> Cloudflare Turnstile (fail-closed) + Upstash Ratelimit (fail-open)</li>
+  <li><strong>Notifications:</strong> Slack incoming webhook (2s timeout, fail-silent)</li>
+  <li><strong>Attribution:</strong> localStorage anonymous ID + UTM capture (first-touch + last-touch) + page_view events</li>
+  <li><strong>Real-time UI:</strong> Supabase Realtime channel on <code>waitlist_stats</code></li>
+  <li><strong>Admin dashboard:</strong> <code>/admin</code> server component, gated by Edge middleware (HTTP basic auth), reads via service-role client to bypass RLS — KPIs, UTM source/medium/campaign breakdowns, lead-tier breakdown, recent signups table</li>
+</ul>
+
+<p>Every external service has a timeout and a "what if it's down?" plan, so a slow Apollo or a broken Slack never breaks signup itself.</p>
+
+</body>
+</html>
