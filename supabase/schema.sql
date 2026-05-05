@@ -37,6 +37,16 @@ create table if not exists waitlist (
   first_landing_page text,
   first_seen_at timestamptz,
 
+  -- enrichment (by work-email domain, populated via Apollo or compatible provider)
+  enriched_company_name text,
+  enriched_industry text,
+  enriched_employee_count int,
+  enriched_annual_revenue bigint,
+  enriched_country text,
+  enriched_linkedin_url text,
+  enrichment_provider text,
+  enriched_at timestamptz,
+
   anonymous_id text,
   created_at timestamptz not null default now()
 );
@@ -59,6 +69,18 @@ alter table waitlist add column if not exists first_li_fat_id text;
 alter table waitlist add column if not exists first_referrer text;
 alter table waitlist add column if not exists first_landing_page text;
 alter table waitlist add column if not exists first_seen_at timestamptz;
+
+alter table waitlist add column if not exists enriched_company_name text;
+alter table waitlist add column if not exists enriched_industry text;
+alter table waitlist add column if not exists enriched_employee_count int;
+alter table waitlist add column if not exists enriched_annual_revenue bigint;
+alter table waitlist add column if not exists enriched_country text;
+alter table waitlist add column if not exists enriched_linkedin_url text;
+alter table waitlist add column if not exists enrichment_provider text;
+alter table waitlist add column if not exists enriched_at timestamptz;
+
+create index if not exists waitlist_enriched_employee_count_idx
+  on waitlist (enriched_employee_count desc nulls last);
 
 create table if not exists events (
   id uuid primary key default gen_random_uuid(),

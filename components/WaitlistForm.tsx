@@ -7,14 +7,17 @@ import {
   type Attribution,
 } from "@/lib/attribution";
 import { track } from "@/lib/track";
+import Turnstile from "@/components/Turnstile";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
 const FORM_NAME = "waitlist";
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export default function WaitlistForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const attrRef = useRef<Attribution | null>(null);
   const focusedOnce = useRef(false);
 
@@ -40,6 +43,12 @@ export default function WaitlistForm() {
     e.preventDefault();
     track("form_submit_attempt", { form: FORM_NAME });
 
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setStatus("error");
+      setErrorMsg("Please complete the verification challenge.");
+      return;
+    }
+
     setStatus("submitting");
     setErrorMsg(null);
 
@@ -50,6 +59,7 @@ export default function WaitlistForm() {
       full_name: String(fd.get("full_name") ?? ""),
       work_email: String(fd.get("work_email") ?? ""),
       company: String(fd.get("company") ?? ""),
+      turnstile_token: turnstileToken,
       ...flattenForApi(attr),
     };
 
@@ -97,6 +107,9 @@ export default function WaitlistForm() {
   const inputClass =
     "w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/30";
 
+  const submitDisabled =
+    status === "submitting" || (!!TURNSTILE_SITE_KEY && !turnstileToken);
+
   return (
     <form onSubmit={onSubmit} className="space-y-3">
       <div>
@@ -142,9 +155,19 @@ export default function WaitlistForm() {
         />
       </div>
 
+      {TURNSTILE_SITE_KEY && (
+        <div className="flex justify-center pt-1">
+          <Turnstile
+            sitekey={TURNSTILE_SITE_KEY}
+            onToken={setTurnstileToken}
+            onError={() => setTurnstileToken(null)}
+          />
+        </div>
+      )}
+
       <button
         type="submit"
-        disabled={status === "submitting"}
+        disabled={submitDisabled}
         className="w-full rounded-lg bg-white px-4 py-3 font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === "submitting" ? "Joining…" : "Request early access"}
