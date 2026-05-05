@@ -147,10 +147,14 @@ export async function POST(req: Request) {
 
   const supabase = getSupabaseServer();
 
-  // 6) Insert
-  const { data: inserted, error: insertErr } = await supabase
+  // 6) Insert. We pre-generate the id so we don't need a SELECT-after-insert
+  //    (anon has no SELECT policy on waitlist by design — emails must not be
+  //    publicly readable). The events row below references this same id.
+  const waitlistId = crypto.randomUUID();
+  const { error: insertErr } = await supabase
     .from("waitlist")
     .insert({
+      id: waitlistId,
       full_name,
       work_email,
       company,
@@ -164,9 +168,7 @@ export async function POST(req: Request) {
       enriched_linkedin_url: enrichment?.linkedin_url ?? null,
       enrichment_provider: enrichment?.provider ?? null,
       enriched_at: enrichment ? new Date().toISOString() : null,
-    })
-    .select("id")
-    .single();
+    });
 
   if (insertErr) {
     if (insertErr.code === "23505") {
@@ -175,6 +177,12 @@ export async function POST(req: Request) {
         { status: 409 }
       );
     }
+    console.error("[waitlist] insert failed", {
+      code: insertErr.code,
+      message: insertErr.message,
+      details: insertErr.details,
+      hint: insertErr.hint,
+    });
     return NextResponse.json({ error: "Could not save signup." }, { status: 500 });
   }
 
@@ -182,7 +190,7 @@ export async function POST(req: Request) {
   await Promise.allSettled([
     supabase.from("events").insert({
       event_name: "waitlist_signup",
-      user_id: inserted.id,
+      user_id: waitlistId,
       properties: {
         work_email,
         company,
