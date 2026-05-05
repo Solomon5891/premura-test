@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import WaitlistForm from "@/components/WaitlistForm";
 import SignupCounter from "@/components/SignupCounter";
+import PageViewTracker from "@/components/PageViewTracker";
 import { getSupabaseServer } from "@/lib/supabase-server";
 
 export const revalidate = 0;
@@ -24,6 +25,7 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_rgba(56,189,248,0.15),_transparent_60%),_radial-gradient(ellipse_at_bottom,_rgba(168,85,247,0.12),_transparent_60%)] bg-neutral-950 text-white">
+      <PageViewTracker />
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-10">
         <header className="flex items-center justify-between">
           <div className="text-sm font-semibold tracking-wide text-white/80">

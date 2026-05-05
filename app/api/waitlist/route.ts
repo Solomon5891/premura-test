@@ -17,12 +17,55 @@ type Body = {
   full_name?: string;
   work_email?: string;
   company?: string;
+  anonymous_id?: string;
+
   utm_source?: string | null;
   utm_medium?: string | null;
   utm_campaign?: string | null;
+  utm_term?: string | null;
+  utm_content?: string | null;
+  gclid?: string | null;
+  fbclid?: string | null;
+  li_fat_id?: string | null;
   referrer?: string | null;
-  anonymous_id?: string;
+  landing_page?: string | null;
+
+  first_utm_source?: string | null;
+  first_utm_medium?: string | null;
+  first_utm_campaign?: string | null;
+  first_utm_term?: string | null;
+  first_utm_content?: string | null;
+  first_gclid?: string | null;
+  first_fbclid?: string | null;
+  first_li_fat_id?: string | null;
+  first_referrer?: string | null;
+  first_landing_page?: string | null;
+  first_seen_at?: string | null;
 };
+
+const ATTRIBUTION_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "fbclid",
+  "li_fat_id",
+  "referrer",
+  "landing_page",
+  "first_utm_source",
+  "first_utm_medium",
+  "first_utm_campaign",
+  "first_utm_term",
+  "first_utm_content",
+  "first_gclid",
+  "first_fbclid",
+  "first_li_fat_id",
+  "first_referrer",
+  "first_landing_page",
+  "first_seen_at",
+] as const;
 
 export async function POST(req: Request) {
   let body: Body;
@@ -53,6 +96,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Please enter your company." }, { status: 400 });
   }
 
+  const attribution: Record<string, string | null> = {};
+  for (const key of ATTRIBUTION_KEYS) {
+    attribution[key] = body[key] ?? null;
+  }
+
   const supabase = getSupabaseServer();
 
   const { data: inserted, error: insertErr } = await supabase
@@ -61,11 +109,8 @@ export async function POST(req: Request) {
       full_name,
       work_email,
       company,
-      utm_source: body.utm_source ?? null,
-      utm_medium: body.utm_medium ?? null,
-      utm_campaign: body.utm_campaign ?? null,
-      referrer: body.referrer ?? null,
       anonymous_id: body.anonymous_id ?? null,
+      ...attribution,
     })
     .select("id")
     .single();
@@ -86,11 +131,8 @@ export async function POST(req: Request) {
     properties: {
       work_email,
       company,
-      utm_source: body.utm_source ?? null,
-      utm_medium: body.utm_medium ?? null,
-      utm_campaign: body.utm_campaign ?? null,
-      referrer: body.referrer ?? null,
       anonymous_id: body.anonymous_id ?? null,
+      ...attribution,
     },
   });
 
