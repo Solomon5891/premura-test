@@ -11,6 +11,7 @@ But it's not just a normal sign-up sheet. Ours is sneaky-smart:
 3. It **tells our team on Slack** the second someone signs up, so we can reach out fast.
 4. It **counts everyone live** on the page so visitors see "237 teams already on the waitlist" and feel like they should hurry.
 5. It **stops robots** from spamming the form with fake names.
+6. It **lets our team peek at all the signups** through a private dashboard — but keeps everyone else locked out.
 
 That's the whole project.
 
@@ -52,6 +53,18 @@ Even with a bouncer, sometimes one person tries to sign up too many times. Upsta
 Every visitor's web browser has a tiny notebook called localStorage. We write two things in it:
 1. A **random ID** so we can tell "this is the same person who visited yesterday" — without ever asking their name.
 2. The **first place they came from** (their first Google search, their first tweet click). Because if they visit 5 times before signing up, we want to know what *originally* brought them, not just the last click.
+
+### 🔐 The admin dashboard — a secret peephole for the team
+All these signups are piling up in the filing cabinet. How does the team actually *look* at them?
+
+We built a **secret back-room peephole** at `/admin`. To open the door you have to type a password — the browser shows one of those little pop-ups that asks for a username and password. Once you're in, you see:
+- **Big numbers**: total signups, signups in the last 24 hours, signups in the last 7 days.
+- **Breakdowns**: which sources brought the most people (Google? Twitter? word of mouth?), which campaigns, which mediums, and what size of company each signup works at.
+- **A list** of the most recent 100 signups with everything Apollo told us about each one.
+
+But wait — remember the security guard (RLS) who won't let our front-door key read the filing cabinet? The dashboard needs to read it. So we keep a **special master key** called the *service-role key* tucked away in the back room. The guard respects this master key. We never, ever hand it to a visitor's browser — only the back-room kitchen ever holds it.
+
+A little doorman called **middleware** stands at every URL that starts with `/admin` and checks the password before letting anyone through. If the password is wrong (or missing), the doorman politely says "401 — please show me a password." Wrong password → no peeking. Simple.
 
 ---
 
@@ -99,6 +112,9 @@ The whole thing takes about **3 seconds**, mostly waiting on Apollo.
 | Paper airplane | `lib/slack.ts` | Slack webhook |
 | Turn counter | `lib/ratelimit.ts` | Upstash rate limit |
 | Database shape | `supabase/schema.sql` + `supabase/migrations/` | The drawer designs |
+| Admin dashboard page | `app/admin/page.tsx` | The peephole — KPIs, UTM breakdowns, recent signups |
+| Master-key client | `lib/supabase-admin.ts` | Server-only Supabase client (service-role) |
+| Doorman | `middleware.ts` | Basic-auth gate on `/admin/*` |
 
 ---
 
@@ -115,6 +131,8 @@ Some keys are public — like the front door key to a public library. Others are
 | `UPSTASH_REDIS_REST_URL` + `_TOKEN` | The turn-counter | Secret |
 | `TURNSTILE_SECRET_KEY` | Bouncer's verification key | Secret |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Public side of the bouncer | Public |
+| `SUPABASE_SERVICE_ROLE_KEY` | Master key — bypasses RLS so the admin dashboard can read everything | **Very Secret** (server-only) |
+| `ADMIN_PASSWORD` | Password for the `/admin` peephole | Secret |
 
 ---
 
@@ -127,5 +145,6 @@ Some keys are public — like the front door key to a public library. Others are
 - **Notifications:** Slack incoming webhook (2s timeout, fail-silent)
 - **Attribution:** localStorage anonymous ID + UTM capture (first-touch + last-touch) + page_view events
 - **Real-time UI:** Supabase Realtime channel on `waitlist_stats`
+- **Admin dashboard:** `/admin` server component, gated by Edge middleware (HTTP basic auth), reads via service-role client to bypass RLS — KPIs, UTM source/medium/campaign breakdowns, lead-tier breakdown, recent signups table
 
 Every external service has a timeout and a "what if it's down?" plan, so a slow Apollo or a broken Slack never breaks signup itself.
